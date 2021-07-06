@@ -26,6 +26,7 @@
 #endif // DISABLE_OPENCV
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include "util.h"
 
 
@@ -176,7 +177,7 @@ int example_batchprocessing(int argc, char **argv)
         	cv::waitKey(0);
         }
     }
-	cvDestroyAllWindows();
+	cv::destroyAllWindows();
 #else
 	std::cerr << "ERROR: " << __FILE__ << ": OpenCV disabled in compilation, but this example requires OpenCV." << std::endl;
 #endif // DISABLE_OPENCV

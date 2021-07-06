@@ -32,8 +32,8 @@ void show_image(std::string title, const cv::Mat &mat, int x_window, int y_windo
 		return;
 	}
     const char *wTitle = title.c_str();
-    cv::namedWindow(wTitle, CV_WINDOW_NORMAL);
-    cvMoveWindow(wTitle, x_window, y_window);
+    cv::namedWindow(wTitle, cv::WINDOW_AUTOSIZE );
+    cv::moveWindow(wTitle, x_window, y_window);
     cv::imshow(wTitle, mat);
 }
 

@@ -50,6 +50,7 @@ template<> inline bool gpu_supports_real<double>()
 #endif // !defined(DISABLE_CUDA) && defined(__CUDACC__)
 
 
+// CUDA Proxy functions
 template<typename real> HOST_DEVICE FORCEINLINE real realabs(real x);
 template<> HOST_DEVICE FORCEINLINE float realabs<float> (float x)
 {
@@ -173,8 +174,12 @@ template<> HOST_DEVICE FORCEINLINE float realmax<float> () { return FLT_MAX / 4.
 template<> HOST_DEVICE FORCEINLINE double realmax<double> () { return DBL_MAX / 4.0; }
 
 
+// Vector CUDA Proxies -
+
+//typename Array1D::elem_type represents the templated type contained in Array1D
 template<typename Array1D> HOST_DEVICE typename Array1D::elem_type vec_norm_squared(const Array1D &a, int num)
 {
+	// return value templated to be a real
 	typedef typename Array1D::elem_type real;
 	real result = real(0);
 	for (int i = 0; i < num; i++)
@@ -192,6 +197,7 @@ template<typename Array1D> HOST_DEVICE typename Array1D::elem_type vec_norm(cons
 }
 
 
+// Scale in place by scalar value of same type as elements
 template<typename Array1D> HOST_DEVICE void vec_scale_eq(Array1D &a, int num, typename Array1D::elem_type mult)
 {
 	for (int i = 0; i < num; i++)
@@ -200,6 +206,7 @@ template<typename Array1D> HOST_DEVICE void vec_scale_eq(Array1D &a, int num, ty
 	}
 }
 
+// Gets |a_vec - b_vec|, the l1 dist
 
 template<typename Array1D> HOST_DEVICE typename Array1D::elem_type vec_diff_l1(const Array1D &a, const Array1D &b, int num)
 {
@@ -216,6 +223,7 @@ template<typename Array1D> HOST_DEVICE typename Array1D::elem_type vec_diff_l1(c
 }
 
 
+// Standardised behaviour for internal type conversion 
 template<typename Tout, typename Tin> HOST_DEVICE FORCEINLINE Tout convert_type(Tin in);
 template<> HOST_DEVICE FORCEINLINE float convert_type<float, float>(float in) { return in; }
 template<> HOST_DEVICE FORCEINLINE float convert_type<float, double>(double in) { return (float)in; }
@@ -240,7 +248,7 @@ template<> struct ElemType2Kind<unsigned char> { static const ElemKind value = e
 template<> struct ElemType2Kind<float> { static const ElemKind value = elem_kind_float; };
 template<> struct ElemType2Kind<double> { static const ElemKind value = elem_kind_double; };
 
-
+// Static carefully optimized switch to find size of enum types in memory 
 struct ElemKindGeneral
 {
 	HOST_DEVICE static size_t size(ElemKind elem_kind)
@@ -255,7 +263,7 @@ struct ElemKindGeneral
 	}
 };
 
-
+// Wrapper function for type conversion - for more specify template above and add another line
 HOST_DEVICE FORCEINLINE void convert_type(ElemKind out_kind, ElemKind in_kind, void *out, const void *in)
 {
 	if (out_kind == elem_kind_float && in_kind == elem_kind_float) { *(float*)out = convert_type<float, float>(*(const float*)in); }

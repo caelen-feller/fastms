@@ -44,8 +44,8 @@ public:
 	// the following constructor should be used only for the first array.
 	__device__ ShMemArray(int num_elem) : num_elem(num_elem)
 	{
-		index_thread = threadIdx.x + blockDim.x * threadIdx.y;
-		num_threads = blockDim.x * blockDim.y;
+		index_thread = threadIdx.x + blockDim.x * threadIdx.y + threadIdx.z * blockDim.x * blockDim.y;
+		num_threads = blockDim.x * blockDim.y * blockDim.z;
 		data_start = shmem_ptr<T>();
 		data_end = data_start + num_elem * num_threads;
 	}

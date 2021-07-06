@@ -125,7 +125,7 @@ public:
 		std::string title_params = "Parameters";
 		if (!windows_created)
 		{
-		    cv::namedWindow(title_params.c_str(), CV_WINDOW_NORMAL);
+		    cv::namedWindow(title_params.c_str(), cv::WINDOW_AUTOSIZE );
 		    slider_lambda.set_val_range(0.001, 1000, 0.0, -1.0, 500);
 			slider_lambda.pos = slider_lambda.val2pos(par.lambda);
 			cv::createTrackbar("Lambda", title_params.c_str(), &slider_lambda.pos, slider_lambda.pos_max, slider_callback_lambda, (void*)this);
@@ -139,17 +139,17 @@ public:
 				cv::createTrackbar("Temporal", title_params.c_str(), &slider_temporal.pos, slider_temporal.pos_max, slider_callback_temporal, (void*)this);
 			}
 
-		    cv::namedWindow(title_input.c_str(), CV_WINDOW_NORMAL);
+		    cv::namedWindow(title_input.c_str(), cv::WINDOW_AUTOSIZE );
 
-		    cv::namedWindow(title_result.c_str(), CV_WINDOW_NORMAL);
+		    cv::namedWindow(title_result.c_str(), cv::WINDOW_AUTOSIZE );
 
 		    windows_created = true;
 		}
 		if (!windows_positioned)
 		{
-		    cvMoveWindow(title_input.c_str(), 100, 300);
-		    cvMoveWindow(title_result.c_str(), 100 + shown_input_image.cols + 40, 300);
-		    cvMoveWindow(title_params.c_str(), 100 + shown_input_image.cols + 40, 100);
+		    cv::moveWindow(title_input.c_str(), 100, 300);
+		    cv::moveWindow(title_result.c_str(), 100 + shown_input_image.cols + 40, 300);
+		    cv::moveWindow(title_params.c_str(), 100 + shown_input_image.cols + 40, 100);
 			windows_positioned = true;
 		}
 		cv::imshow(title_input.c_str(), shown_input_image);
@@ -320,8 +320,8 @@ int example_gui(int argc, char **argv)
 	  	if(!camera->isOpened()) { delete camera; std::cerr << "ERROR: Could not open camera" << std::endl; return -1; }
 	    int w_cam = 640;
 	    int h_cam = 480;
-	  	camera->set(CV_CAP_PROP_FRAME_WIDTH, w_cam);
-	  	camera->set(CV_CAP_PROP_FRAME_HEIGHT, h_cam);
+	  	camera->set(cv::CAP_PROP_FRAME_WIDTH, w_cam);
+	  	camera->set(cv::CAP_PROP_FRAME_HEIGHT, h_cam);
 		data.recompute_on_param_change = false;
 		data.show_temporal = true;
 		in_dir = "camera";
@@ -392,7 +392,7 @@ int example_gui(int argc, char **argv)
 
     if (use_cam) { delete camera; }
 
-	cvDestroyAllWindows();
+	cv::destroyAllWindows();
 #else
 	std::cerr << "ERROR: " << __FILE__ << ": OpenCV disabled in compilation, but this example requires OpenCV." << std::endl;
 #endif // DISABLE_OPENCV

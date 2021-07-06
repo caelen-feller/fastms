@@ -21,8 +21,8 @@ all: targets
 
 USE_CUDA:=1
 USE_OPENMP:=1
-USE_OPENCV:=1
-USE_MEX:=1
+USE_OPENCV:=0
+USE_MEX:=0
 
 TMP_DIR:=tmp
 
@@ -38,14 +38,14 @@ INCLUDES += -I$(SOLVER_SOURCE_DIR)
 
 
 # check if mac or linux
-MAC:=
-UNAME:=$(shell uname)
-ifeq ($(UNAME), Darwin)
-    MAC:=1
-else ifeq ($(UNAME), Linux)
-else
-    $(error Unexpected system: $(UNAME))
-endif
+MAC:=1
+#UNAME:=$(shell uname)
+#ifeq ($(UNAME), Darwin)
+#    MAC:=1
+#ifelse ifeq ($(UNAME), Linux)
+#else
+#    $(error Unexpected system: $(UNAME))
+#endif
 
 
 # c++
@@ -109,14 +109,15 @@ endif
 
 # opencv 
 ifeq ($(USE_OPENCV), 1)
-    OPENCV_EXISTS:=$(shell pkg-config --exists opencv; echo $$?)
+    OPENCV_EXISTS:=$(shell pkg-config --exists opencv4; echo $$?)
     ifneq ($(OPENCV_EXISTS), 0)
         $(info WARNING: OpenCV not found, disabling OpenCV in compilation.)
         USE_OPENCV:=
     endif
-endif
+endif#
+#USE_OPENCV:=1
 ifeq ($(USE_OPENCV), 1)
-    LIBS += -lopencv_highgui -lopencv_core
+	LIBS +=  $(shell pkg-config opencv4 --libs)
 else
     DEFINES += -DDISABLE_OPENCV
 endif
