@@ -88,8 +88,8 @@ ifeq ($(USE_CUDA), 1)
     ARGS_NVCC += --use_fast_math
     ARGS_NVCC += --compiler-options '$(ARGS_GXX)'
     #ARGS_NVCC += -gencode arch=compute_11,code=compute_11
-    ARGS_NVCC += -gencode arch=compute_20,code=compute_20
-    ARGS_NVCC += -gencode arch=compute_30,code=\"compute_30,sm_30\"
+    ARGS_NVCC += -gencode arch=compute_61,code=compute_61	
+    #ARGS_NVCC += -gencode arch=compute_30,code=\"compute_30,sm_30\"
     #ARGS_NVCC += -gencode arch=compute_35,code=\"compute_35,sm_35\"
     #ARGS_NVCC += --ptxas-options=-v
     COMMAND_NVCC_COMPILE=$(NVCC) -c -o $@ $< $(ARGS_NVCC) $(INCLUDES) $(DEFINES) 
@@ -117,7 +117,12 @@ ifeq ($(USE_OPENCV), 1)
 endif#
 #USE_OPENCV:=1
 ifeq ($(USE_OPENCV), 1)
+<<<<<<< Updated upstream
 	LIBS +=  $(shell pkg-config opencv4 --libs)
+=======
+    LIBS += $(shell pkg-config --libs opencv4;)
+	INCLUDES += $(shell pkg-config --cflags opencv4;)
+>>>>>>> Stashed changes
 else
     DEFINES += -DDISABLE_OPENCV
 endif
@@ -157,7 +162,7 @@ ifeq ($(USE_MEX), 1)
     ifeq ($(MAC), 1)
     	MATLAB_DIR:=/Applications/MATLAB_R2014a.app
     else
-    	MATLAB_DIR:=/usr/local/lehrstuhl/DIR/matlab-R2013b
+    	MATLAB_DIR:=/home/programs/MATLAB/R2021a
     endif
     ifeq ($(wildcard $(MATLAB_DIR)/bin/mex),)
         $(info WARNING: Did not find MATLAB in the specified directory $(MATLAB_DIR), disabling mex target compilation.)

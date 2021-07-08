@@ -125,7 +125,11 @@ public:
 		std::string title_params = "Parameters";
 		if (!windows_created)
 		{
+<<<<<<< Updated upstream
 		    cv::namedWindow(title_params.c_str(), cv::WINDOW_AUTOSIZE );
+=======
+		    cv::namedWindow(title_params.c_str(), cv::WINDOW_NORMAL);
+>>>>>>> Stashed changes
 		    slider_lambda.set_val_range(0.001, 1000, 0.0, -1.0, 500);
 			slider_lambda.pos = slider_lambda.val2pos(par.lambda);
 			cv::createTrackbar("Lambda", title_params.c_str(), &slider_lambda.pos, slider_lambda.pos_max, slider_callback_lambda, (void*)this);
@@ -139,15 +143,25 @@ public:
 				cv::createTrackbar("Temporal", title_params.c_str(), &slider_temporal.pos, slider_temporal.pos_max, slider_callback_temporal, (void*)this);
 			}
 
+<<<<<<< Updated upstream
 		    cv::namedWindow(title_input.c_str(), cv::WINDOW_AUTOSIZE );
 
 		    cv::namedWindow(title_result.c_str(), cv::WINDOW_AUTOSIZE );
+=======
+		    cv::namedWindow(title_input.c_str(), cv::WINDOW_NORMAL);
+
+		    cv::namedWindow(title_result.c_str(), cv::WINDOW_NORMAL);
+>>>>>>> Stashed changes
 
 		    windows_created = true;
 		}
 		if (!windows_positioned)
 		{
+<<<<<<< Updated upstream
 		    cv::moveWindow(title_input.c_str(), 100, 300);
+=======
+            cv::moveWindow(title_input.c_str(), 100, 300);
+>>>>>>> Stashed changes
 		    cv::moveWindow(title_result.c_str(), 100 + shown_input_image.cols + 40, 300);
 		    cv::moveWindow(title_params.c_str(), 100 + shown_input_image.cols + 40, 100);
 			windows_positioned = true;
@@ -392,7 +406,11 @@ int example_gui(int argc, char **argv)
 
     if (use_cam) { delete camera; }
 
+<<<<<<< Updated upstream
 	cv::destroyAllWindows();
+=======
+    cv::destroyAllWindows();
+>>>>>>> Stashed changes
 #else
 	std::cerr << "ERROR: " << __FILE__ << ": OpenCV disabled in compilation, but this example requires OpenCV." << std::endl;
 #endif // DISABLE_OPENCV

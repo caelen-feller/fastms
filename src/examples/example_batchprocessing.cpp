@@ -28,7 +28,7 @@
 #include <vector>
 #include <algorithm>
 #include "util.h"
-
+#include <algorithm>
 
 
 int example_batchprocessing(int argc, char **argv)
@@ -177,7 +177,11 @@ int example_batchprocessing(int argc, char **argv)
         	cv::waitKey(0);
         }
     }
+<<<<<<< Updated upstream
 	cv::destroyAllWindows();
+=======
+    cv::destroyAllWindows();
+>>>>>>> Stashed changes
 #else
 	std::cerr << "ERROR: " << __FILE__ << ": OpenCV disabled in compilation, but this example requires OpenCV." << std::endl;
 #endif // DISABLE_OPENCV
