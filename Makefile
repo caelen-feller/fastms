@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with fastms. If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 
 all: targets
 
@@ -38,14 +38,14 @@ INCLUDES += -I$(SOLVER_SOURCE_DIR)
 
 
 # check if mac or linux
-MAC:=1
-#UNAME:=$(shell uname)
-#ifeq ($(UNAME), Darwin)
-#    MAC:=1
-#ifelse ifeq ($(UNAME), Linux)
-#else
-#    $(error Unexpected system: $(UNAME))
-#endif
+UNAME:=$(shell uname)
+ifeq ($(UNAME), Darwin)
+   MAC:=1
+else ifeq ($(UNAME), Linux)
+	 MAC:=0
+else
+   $(error Unexpected system: $(UNAME))
+endif
 
 
 # c++
@@ -88,18 +88,18 @@ ifeq ($(USE_CUDA), 1)
     ARGS_NVCC += --use_fast_math
     ARGS_NVCC += --compiler-options '$(ARGS_GXX)'
     #ARGS_NVCC += -gencode arch=compute_11,code=compute_11
-    ARGS_NVCC += -gencode arch=compute_61,code=compute_61	
+    ARGS_NVCC += -gencode arch=compute_61,code=compute_61
     #ARGS_NVCC += -gencode arch=compute_30,code=\"compute_30,sm_30\"
     #ARGS_NVCC += -gencode arch=compute_35,code=\"compute_35,sm_35\"
     #ARGS_NVCC += --ptxas-options=-v
-    COMMAND_NVCC_COMPILE=$(NVCC) -c -o $@ $< $(ARGS_NVCC) $(INCLUDES) $(DEFINES) 
+    COMMAND_NVCC_COMPILE=$(NVCC) -c -o $@ $< $(ARGS_NVCC) $(INCLUDES) $(DEFINES)
     COMMAND_GET_DEPENDENCIES_NVCC=@$(NVCC) -M $< $(ARGS_NVCC) $(INCLUDES) $(DEFINES) > $@.dep
 else
     DEFINES += -DDISABLE_CUDA
 endif
 
 
-# openmp  
+# openmp
 ifeq ($(USE_OPENMP), 1)
     LIBS += -lgomp
 else
@@ -107,7 +107,7 @@ else
 endif
 
 
-# opencv 
+# opencv
 ifeq ($(USE_OPENCV), 1)
     OPENCV_EXISTS:=$(shell pkg-config --exists opencv4; echo $$?)
     ifneq ($(OPENCV_EXISTS), 0)
@@ -117,12 +117,8 @@ ifeq ($(USE_OPENCV), 1)
 endif#
 #USE_OPENCV:=1
 ifeq ($(USE_OPENCV), 1)
-<<<<<<< Updated upstream
-	LIBS +=  $(shell pkg-config opencv4 --libs)
-=======
     LIBS += $(shell pkg-config --libs opencv4;)
 	INCLUDES += $(shell pkg-config --cflags opencv4;)
->>>>>>> Stashed changes
 else
     DEFINES += -DDISABLE_OPENCV
 endif
@@ -177,7 +173,7 @@ ifeq ($(USE_MEX), 1)
         MEX_SUFFIX:=mexa64
         SHARED_LIB_EXT:=so
     endif
-    
+
     MEX_SOURCES:=$(shell find src/mex -name '*.cpp')
     MEX_OBJECTS:=$(foreach file, $(MEX_SOURCES), $(TMP_DIR)/$(file).o)
     MEX_OBJECTS += $(SOLVER_TARGET)
@@ -187,19 +183,19 @@ ifeq ($(USE_MEX), 1)
     MEX_DEFINES := $(DEFINES)
 
     MEX_INCLUDES :=$(INCLUDES) -I$(MATLAB_DIR)/extern/include
-     
+
     MATLAB_LIB_DIR:=$(shell dirname `find $(MATLAB_DIR)/bin -name libmex.$(SHARED_LIB_EXT)`)
     MEX_LIBS:=$(LIBS) -L$(MATLAB_LIB_DIR) -lmex -lmx
-    
+
     MEX_TARGET:=examples/matlab/fastms_mex.$(MEX_SUFFIX)
 	TARGETS += $(MEX_TARGET)
-	
+
     COMMAND_COMPILE_GXX_MEX=$(GXX) -c -o $@ $< $(ARGS_GXX) $(MEX_INCLUDES) $(MEX_DEFINES)
     COMMAND_GET_DEPENDENCIES_GXX_MEX=@$(GXX) -M $< $(ARGS_GXX) $(MEX_INCLUDES) $(MEX_DEFINES) > $@.dep
     COMMAND_LINK_MEX=$(GXX) -o $@ $^ -shared $(MEX_LIBS)
 else
 	DEFINES += -DDISABLE_MEX
-endif 
+endif
 
 
 
@@ -225,7 +221,7 @@ $(TMP_DIR)/$(SOLVER_SOURCE_DIR)/%.cu.o: $(SOLVER_SOURCE_DIR)/%.cu Makefile
 	$(COMMAND_MAKE_TARGET_DIR)
 	$(COMMAND_NVCC_COMPILE)
 	$(COMMAND_GET_DEPENDENCIES_NVCC)
-	$(COMMAND_POSTPROCESS_DEPENDENCIES) 
+	$(COMMAND_POSTPROCESS_DEPENDENCIES)
 
 $(SOLVER_TARGET): $(SOLVER_OBJECTS)
 	$(COMMAND_MAKE_TARGET_DIR)
@@ -239,7 +235,7 @@ $(TMP_DIR)/src/examples/%.cpp.o: src/examples/%.cpp Makefile
 	$(COMMAND_COMPILE_GXX)
 	$(COMMAND_GET_DEPENDENCIES_GXX)
 	$(COMMAND_POSTPROCESS_DEPENDENCIES)
-	 
+
 $(MAIN_TARGET): $(MAIN_OBJECTS)
 	$(COMMAND_MAKE_TARGET_DIR)
 	$(COMMAND_LINK_MAIN)
@@ -252,7 +248,7 @@ $(TMP_DIR)/src/mex/%.cpp.o: src/mex/%.cpp Makefile
 	$(COMMAND_COMPILE_GXX_MEX)
 	$(COMMAND_GET_DEPENDENCIES_GXX_MEX)
 	$(COMMAND_POSTPROCESS_DEPENDENCIES)
-	
+
 $(MEX_TARGET): $(MEX_OBJECTS)
 	$(COMMAND_MAKE_TARGET_DIR)
 	$(COMMAND_LINK_MEX)
