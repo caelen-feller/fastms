@@ -19,6 +19,7 @@
 
 #include "example_batchprocessing.h"
 #include "example_gui.h"
+#include "example_volumes.h"
 #include "param.h"
 #include <iostream>
 
@@ -32,10 +33,15 @@ int main(int argc, char **argv)
 	//   --> if multiple input images given
 
 	bool use_cam = false;
+  bool use_vol = true;
+  get_param("vol", use_vol, arc, argv);
 	get_param("cam", use_cam, argc, argv);
 
     std::vector<std::string> inputfiles;
     get_param("i", inputfiles, argc, argv);
+
+
+    if (use_vol &&)
 
     if (use_cam || inputfiles.size() <= 1)
     {
@@ -45,4 +51,5 @@ int main(int argc, char **argv)
     {
 		return example_batchprocessing(argc, argv);
     }
+    
 }
