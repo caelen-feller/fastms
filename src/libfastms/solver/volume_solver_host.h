@@ -34,7 +34,7 @@ public:
 	VolumeSolverHost();
 	~VolumeSolverHost();
 
-	BaseVolume* run(const BaseVolume *in_volume, const Par &par);
+	BaseVolume* run(const BaseVolume *in_volume, const Par3 &par);
 
 private:
 	VolumeSolverHost(const VolumeSolverHost<real> &other_solver);  // disable

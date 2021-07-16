@@ -63,7 +63,7 @@ void copy_volume_h2h(TUntypedAccessOut out, TUntypedAccessIn in)
 	if (out.elem_kind() == in.elem_kind() &&
 		types_equal<typename TUntypedAccessOut::data_interpretation_t, typename TUntypedAccessIn::data_interpretation_t>::value)
 	{
-		HostAllocator::copy3d(out.data(), out.data_pitch(), in.const_data(), in.data_pitch(), in.data_width_in_bytes(), in.data_height(), in.data_depth());
+		HostAllocator3::copy3d(out.data(), out.data_pitch(), in.const_data(), in.data_pitch(), in.data_width_in_bytes(), in.data_height(), in.data_depth());
 	}
 	else
 	{
@@ -83,7 +83,7 @@ void copy_volume_d2d(TUntypedAccessOut out, TUntypedAccessIn in)
 	if (out.elem_kind() == in.elem_kind() &&
 		types_equal<typename TUntypedAccessOut::data_interpretation_t, typename TUntypedAccessIn::data_interpretation_t>::value)
 	{
-		DeviceAllocator::copy3d(out.data(), out.data_pitch(), in.data(), in.data_pitch(), in.data_width_in_bytes(), in.data_height(), in.data_depth());
+		DeviceAllocator3::copy3d(out.data(), out.data_pitch(), in.data(), in.data_pitch(), in.data_width_in_bytes(), in.data_height(), in.data_depth());
 	}
 	else
 	{
@@ -98,14 +98,14 @@ void copy_volume_h2d(TUntypedAccessOut out, TUntypedAccessIn in)
 	if (out.elem_kind() == in.elem_kind() &&
 		types_equal<typename TUntypedAccessOut::data_interpretation_t, typename TUntypedAccessIn::data_interpretation_t>::value)
 	{
-		DeviceAllocator::copy3d_h2d(out.data(), out.data_pitch(), in.data(), in.data_pitch(), in.data_width_in_bytes(), in.data_height(), in.data_depth());
+		DeviceAllocator3::copy3d_h2d(out.data(), out.data_pitch(), in.data(), in.data_pitch(), in.data_width_in_bytes(), in.data_height(), in.data_depth());
 	}
 	else
 	{
 		TUntypedAccessIn in_device = alloc_untyped_access<TUntypedAccessIn>(in.dim(), in.elem_kind(), false);  // false: not on_host = on_device
-		DeviceAllocator::copy3d_h2d(in_device.data(), in_device.data_pitch(), in.data(), in.data_pitch(), in.data_width_in_bytes(), in.data_height(), in.data_depth());
+		DeviceAllocator3::copy3d_h2d(in_device.data(), in_device.data_pitch(), in.data(), in.data_pitch(), in.data_width_in_bytes(), in.data_height(), in.data_depth());
 		copy_volume_d2d(out, in_device);
-		DeviceAllocator::free(in_device.data());
+		DeviceAllocator3::free(in_device.data());
 	}
 }
 
@@ -116,14 +116,14 @@ void copy_volume_d2h(TUntypedAccessOut out, TUntypedAccessIn in)
 	if (out.elem_kind() == in.elem_kind() &&
 		types_equal<typename TUntypedAccessOut::data_interpretation_t, typename TUntypedAccessIn::data_interpretation_t>::value)
 	{
-		DeviceAllocator::copy3d_d2h(out.data(), out.data_pitch(), in.data(), in.data_pitch(), in.data_width_in_bytes(), in.data_height(), in.data_depth());
+		DeviceAllocator3::copy3d_d2h(out.data(), out.data_pitch(), in.data(), in.data_pitch(), in.data_width_in_bytes(), in.data_height(), in.data_depth());
 	}
 	else
 	{
 		TUntypedAccessOut out_device = alloc_untyped_access<TUntypedAccessOut>(out.dim(), out.elem_kind(), false);  // false: not on_host = on_device
 	    copy_volume_d2d(out_device, in);
-		DeviceAllocator::copy3d_d2h(out.data(), out.data_pitch(), out_device.data(), out_device.data_pitch(), out.data_width_in_bytes(), out.data_height(), out.data_depth());
-		DeviceAllocator::free(out_device.data());
+		DeviceAllocator3::copy3d_d2h(out.data(), out.data_pitch(), out_device.data(), out_device.data_pitch(), out.data_width_in_bytes(), out.data_height(), out.data_depth());
+		DeviceAllocator3::free(out_device.data());
 	}
 }
 #endif // not DISABLE_CUDA

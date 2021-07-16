@@ -156,12 +156,12 @@ public:
 				vec_scale_eq(u, u_num_channels, mult);
 			}
 
-			for(int i = 0; i < u_num_channels; i++) { u.get(i) += prev_u.get(x, y, i); }
+			for(int i = 0; i < u_num_channels; i++) { u.get(i) += prev_u.get(x, y, z, i); }
 		}
 	}
 
 	template<typename Array1D>
-	HOST_DEVICE real value (Array1D &u, int x, int y, const Dim3D &dim3d, const int u_num_channels)
+	HOST_DEVICE real value (Array1D &u, int x, int y, int z, const Dim3D &dim3d, const int u_num_channels)
 	{
 		// coeff * (u - f)^2
 		real c0 = get_coeff();

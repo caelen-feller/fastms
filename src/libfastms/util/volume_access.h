@@ -30,6 +30,13 @@
 #endif // not DISABLE_CUDA
 
 
+#if !defined(DISABLE_CUDA) && defined(__CUDACC__)
+#define HOST_DEVICE __host__ __device__
+#define FORCEINLINE __forceinline__
+#else
+#define HOST_DEVICE
+#define FORCEINLINE inline
+#endif // !defined(DISABLE_CUDA) && defined(__CUDACC__)
 
 
 struct DataIndex3
@@ -136,7 +143,7 @@ public:
 		size_t pitch0 = 0;
 
 		cudaMallocPitch(&ptr_cuda, &pitch0, used_data_dim->pitch, used_data_dim->height * used_data_dim->depth);
-		
+
 		used_data_dim->pitch = pitch0;
 		return ptr_cuda;
 	}
@@ -214,8 +221,8 @@ private:
 	HOST_DEVICE size_t offset(int x, int y, int z, int i) const
 	{
 		const DataIndex3 &data_index = data_interpretation_t::get(x, y, z, i, volume_data_.dim_);
-		// This might not be right! 
-		return data_index.x * sizeof(T) + volume_data_.data_pitch_ * data_index.y  +  volume_data_.data_pitch_ * volume_data_.dim_.h * data_index.z);
+		// This might not be right!
+		return data_index.x * sizeof(T) + volume_data_.data_pitch_ * data_index.y + volume_data_.data_pitch_ * volume_data_.dim_.h * data_index.z;
 	}
 	HOST_DEVICE DataDim3 used_data_dim() const { return data_interpretation_t::used_data_dim(volume_data_.dim_, sizeof(T)); }
 
@@ -251,6 +258,7 @@ struct VolumeUntypedAccess
 	HOST_DEVICE const void* const_data() const { return volume_data_.data_; }
 	HOST_DEVICE size_t data_pitch() const { return volume_data_.data_pitch_; }
 	HOST_DEVICE size_t data_height() const { return used_data_dim().height; }
+	HOST_DEVICE size_t data_depth() const { return used_data_dim().depth; }
 	HOST_DEVICE size_t data_width_in_bytes() const { return used_data_dim().pitch; }
 	HOST_DEVICE size_t num_bytes() const { return data_pitch() * data_height(); }
 
@@ -274,7 +282,7 @@ struct DataInterpretationLayered
 {
 	HOST_DEVICE static DataIndex3 get(int x, int y, int z, int i, const ArrayDim3 &dim)
 	{
-		return DataIndex3(x, y, z + (size_t)dim.z * i);
+		return DataIndex3(x, y, z + (size_t)dim.d * i);
 	}
 	HOST_DEVICE static DataDim3 used_data_dim (const ArrayDim3 &dim, size_t elem_size)
 	{

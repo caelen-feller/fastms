@@ -36,7 +36,7 @@ __device__ __forceinline__ int cuda_z() { return threadIdx.z + blockDim.z * bloc
 
 __device__ __host__ __forceinline__ bool is_active(int x, int y, int z, const Dim3D &dim)
 {
-	return (x < dim.w && y < dim.h && z < dim.z);
+	return (x < dim.w && y < dim.h && z < dim.d);
 }
 
 
@@ -55,8 +55,7 @@ inline dim3 cuda_grid_size(dim3 block, int w, int h, int d)
 	return dim3(
             (w + block.x - 1) / block.x, 
             (h + block.y - 1) / block.y, 
-            (d + block.z - 1) / block.z)
-        );
+            (d + block.z - 1) / block.z);
 }
 
 

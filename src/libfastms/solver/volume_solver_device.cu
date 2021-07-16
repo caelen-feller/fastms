@@ -53,8 +53,8 @@ public:
 	virtual std::string str() { return "cuda"; }
 	virtual void alloc(const ArrayDim3 &dim_u)
 	{
-		block = cuda_block_size(dim_u.w, dim_u.h);
-		grid = cuda_grid_size(block, dim_u.w, dim_u.h);
+		block = cuda_block_size(dim_u.w, dim_u.h, dim_u.d);
+		grid = cuda_grid_size(block, dim_u.w, dim_u.h, dim_u.d);
 	}
 	virtual void free()	{}
 	virtual bool is_valid() { return is_enabled; }
@@ -384,7 +384,7 @@ private:
 
 template<typename real> VolumeSolverDevice<real>::VolumeSolverDevice() : implementation(NULL) { implementation = new VolumeSolverDeviceImplementation<real>(); }
 template<typename real> VolumeSolverDevice<real>::~VolumeSolverDevice() { delete implementation; }
-template<typename real> BaseVolume* VolumeSolverDevice<real>::run(const BaseVolume *volume, const Par &par) { return implementation->run(volume, par); }
+template<typename real> BaseVolume* VolumeSolverDevice<real>::run(const BaseVolume *volume, const Par3 &par) { return implementation->run(volume, par); }
 template class VolumeSolverDevice<float>;
 template class VolumeSolverDevice<double>;
 

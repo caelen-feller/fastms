@@ -162,8 +162,8 @@ public:
 	typename image_access_t::image_untyped_access_t get_untyped_access() { return array.get_untyped_access(); }
 	image_access_t& get_access() { return array; }
 	const image_access_t& get_access() const { return array; }
-	virtual BaseImage* new_of_same_type_and_size() const { return new Self(dim()); }
 	virtual ArrayDim dim() const { return array.dim(); }
+	virtual BaseImage* new_of_same_type_and_size() const { return new Self(dim()); }
 	virtual void copy_from_layered(const ImageUntypedAccess<DataInterpretationLayered> &in) { copy_image(this->array.get_untyped_access(), in); }
 	virtual void copy_to_layered(ImageUntypedAccess<DataInterpretationLayered> out) const { copy_image(out, this->array.get_untyped_access()); }
 

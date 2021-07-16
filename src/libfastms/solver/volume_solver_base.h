@@ -66,7 +66,7 @@ public:
 	virtual ~VolumeSolverBase();
 
 
-	BaseVolume* run(const BaseVolume *volume, const Par &par_const);
+	BaseVolume* run(const BaseVolume *volume, const Par3 &par_const);
 
 protected:
 	void set_engine(Engine3<real> *engine);
@@ -86,15 +86,15 @@ private:
 	BaseVolume* get_solution(const BaseVolume *volume);
 
 	Engine3<real> *engine;
-	Par par;
-	PrimalDualVars<volume_access_t> pd_vars;
+	Par3 par;
+	PrimalDualVars3<volume_access_t> pd_vars;
 	bool u_is_computed;
 
 	struct Arrays
 	{
 		size_t alloc(Engine3<real> *engine, const ArrayDim3 &dim_u, const ArrayDim3 &dim_p)
 		{
-			ArrayDim3 dim_scalar(dim_u.w, dim_u.h, 1);
+			ArrayDim3 dim_scalar(dim_u.w, dim_u.h, dim_u.d, 1);
 			size_t mem = 0;
 			mem += engine->volume_manager()->alloc(u, dim_u);
 			mem += engine->volume_manager()->alloc(ubar, dim_u);

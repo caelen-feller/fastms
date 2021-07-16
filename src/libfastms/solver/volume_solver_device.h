@@ -37,7 +37,7 @@ public:
 	VolumeSolverDevice();
 	~VolumeSolverDevice();
 
-	BaseVolume* run(const BaseVolume *volume, const Par &par);
+	BaseVolume* run(const BaseVolume *volume, const Par3 &par);
 
 private:
 	VolumeSolverDevice(const VolumeSolverDevice<real> &other_solver);  // disable

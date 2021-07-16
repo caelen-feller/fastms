@@ -40,11 +40,11 @@ public:
 	virtual BaseVolume* run(const BaseVolume *in, const Par3 &par) = 0;
 
 	// layered real
-	virtual void run(float *&out_volume, const float *in_volume), const ArrayDim3 &dim, const Par3 &par) = 0;
-	virtual void run(double *&out_volume, const double *in_volume), const ArrayDim3 &dim, const Par3 &par) = 0;
+	virtual void run(float *&out_volume, const float *in_volume, const ArrayDim3 &dim, const Par3 &par) = 0;
+	virtual void run(double *&out_volume, const double *in_volume, const ArrayDim3 &dim, const Par3 &par) = 0;
 
 	// interlaced char
-	virtual void run(unsigned char *&out_volume, const unsigned char *in_volume), const ArrayDim3 &dim, const Par3 &par) = 0;
+	virtual void run(unsigned char *&out_volume, const unsigned char *in_volume, const ArrayDim3 &dim, const Par3 &par) = 0;
 
 	virtual int get_class_type() = 0; // for is_instance_of()
 };
@@ -54,7 +54,7 @@ public:
 namespace
 {
 
-template<typename Solver>
+template<typename Solver3>
 class SolverImplementationConcrete: public SolverImplementation3
 {
 public:
@@ -67,19 +67,19 @@ public:
 	}
 
 	// layered real
-	virtual void run(float *&out_volume, const float *in_volume), const ArrayDim3 &dim, const Par3 &par)
+	virtual void run(float *&out_volume, const float *in_volume, const ArrayDim3 &dim, const Par3 &par)
 	{
-		run_real(out_volume, in_volume), dim, par);
+		run_real(out_volume, in_volume, dim, par);
 	}
-	virtual void run(double *&out_volume, const double *in_volume), const ArrayDim3 &dim, const Par3 &par)
+	virtual void run(double *&out_volume, const double *in_volume, const ArrayDim3 &dim, const Par3 &par)
 	{
-		run_real(out_volume, in_volume), dim, par);
+		run_real(out_volume, in_volume, dim, par);
 	}
-	template<typename real> void run_real(real *&out_volume, const real *in_volume), const ArrayDim3 &dim, const Par3 &par)
+	template<typename real> void run_real(real *&out_volume, const real *in_volume, const ArrayDim3 &dim, const Par3 &par)
 	{
 		typedef ManagedVolume<real, DataInterpretationLayered> managed_volume_t;
 
-		managed_volume_t in_managed(const_cast<real*>(in_volume)), dim);
+		managed_volume_t in_managed(const_cast<real*>(in_volume), dim);
 		managed_volume_t *out_managed = static_cast<managed_volume_t*>(volume_solver.run(&in_managed, par));
 		if (out_volume)
 		{
@@ -96,11 +96,11 @@ public:
 	}
 
 	// interlaced char
-	virtual void run(unsigned char *&out_volume, const unsigned char *in_volume), const ArrayDim3 &dim, const Par3 &par)
+	virtual void run(unsigned char *&out_volume, const unsigned char *in_volume, const ArrayDim3 &dim, const Par3 &par)
 	{
-		typedef ManagedImage<unsigned char, DataInterpretationInterlaced> managed_volume_t;
+		typedef ManagedVolume<unsigned char, DataInterpretationInterlaced> managed_volume_t;
 
-		managed_volume_t in_managed(const_cast<unsigned char*>(in_volume)), dim);
+		managed_volume_t in_managed(const_cast<unsigned char*>(in_volume), dim);
 		managed_volume_t *out_managed = static_cast<managed_volume_t*>(volume_solver.run(&in_managed, par));
 		if (out_volume)
 		{
@@ -121,17 +121,17 @@ public:
 	static int static_get_class_type() { return class_type; }
 
 private:
-	Solver volume_solver;
+	Solver3 volume_solver;
 
 	static const int class_type =
 #ifndef DISABLE_CUDA
-	(types_equal<Solver, SolverHost<float> >::value? 0 : \
-     types_equal<Solver, SolverHost<double> >::value? 1 : \
-     types_equal<Solver, SolverDevice<float> >::value? 2 : \
-     types_equal<Solver, SolverDevice<double> >::value? 3 : -1);
+	(types_equal<Solver3, VolumeSolverHost<float> >::value? 0 : \
+     types_equal<Solver3, VolumeSolverHost<double> >::value? 1 : \
+     types_equal<Solver3, VolumeSolverDevice<float> >::value? 2 : \
+     types_equal<Solver3, VolumeSolverDevice<double> >::value? 3 : -1);
 #else
-	(types_equal<Solver, SolverHost<float> >::value? 0 : \
-     types_equal<Solver, SolverHost<double> >::value? 1 : -1);
+	(types_equal<Solver3, VolumeSolverHost<float> >::value? 0 : \
+     types_equal<Solver3, VolumeSolverHost<double> >::value? 1 : -1);
 #endif // not DISABLE_CUDA
 };
 
@@ -159,7 +159,7 @@ template<typename real> void set_implementation_real(SolverImplementation3 *&imp
 	{
 		case Par3::engine_cpu:
 		{
-			set_implementation_concrete<SolverImplementationConcrete<SolverHost<real> > >(implementation, par);
+			set_implementation_concrete<SolverImplementationConcrete<VolumeSolverHost<real> > >(implementation, par);
 			return;
 		}
 		case Par3::engine_cuda:
@@ -167,11 +167,11 @@ template<typename real> void set_implementation_real(SolverImplementation3 *&imp
 			std::string error_str;
 			bool cuda_ok = has_cuda(&error_str);
 #ifndef DISABLE_CUDA
-			if (cuda_ok) { set_implementation_concrete<SolverImplementationConcrete<SolverDevice<real> > >(implementation, par); }
+			if (cuda_ok) { set_implementation_concrete<SolverImplementationConcrete<VolumeSolverDevice<real> > >(implementation, par); }
 #endif // not DISABLE_CUDA
 			if (!cuda_ok)
 			{
-				std::cerr << "ERROR: Solver::run(): Could not select CUDA engine, USING CPU VERSION INSTEAD (" << error_str.c_str() << ")." << std::endl;
+				std::cerr << "ERROR: Solver3::run(): Could not select CUDA engine, USING CPU VERSION INSTEAD (" << error_str.c_str() << ")." << std::endl;
 				Par3 par_cpu = par;
 				par_cpu.engine = Par3::engine_cpu;
 				set_implementation_real<real>(implementation, par_cpu);
@@ -180,7 +180,7 @@ template<typename real> void set_implementation_real(SolverImplementation3 *&imp
 		}
 		default:
 		{
-			std::cerr << "ERROR: Solver::run(): Unexpected engine " << par.engine << ", USING CPU VERSION INSTEAD" << std::endl;
+			std::cerr << "ERROR: Solver3::run(): Unexpected engine " << par.engine << ", USING CPU VERSION INSTEAD" << std::endl;
 			Par3 par_cpu = par;
 			par_cpu.engine = Par3::engine_cpu;
 			set_implementation_real<real>(implementation, par_cpu);
@@ -203,26 +203,26 @@ void set_implementation(SolverImplementation3 *&implementation, const Par3 &par)
 
 
 
-Solver::Solver() : implementation(NULL) {}
-Solver::~Solver() { if (implementation) { delete implementation; } }
-BaseVolume* Solver::run(const BaseVolume *in, const Par3 &par)
+Solver3::Solver3() : implementation(NULL) {}
+Solver3::~Solver3() { if (implementation) { delete implementation; } }
+BaseVolume* Solver3::run(const BaseVolume *in, const Par3 &par)
 {
 	set_implementation(implementation, par); if (!implementation) { return NULL; }
 	return implementation->run(in, par);
 }
-void Solver::run(float *&out_volume, const float *in_volume), const ArrayDim3 &dim, const Par3 &par)
+void Solver3::run(float *&out_volume, const float *in_volume, const ArrayDim3 &dim, const Par3 &par)
 {
 	set_implementation_real<float>(implementation, par); if (!implementation) { return; }
-	return implementation->run(out_volume, in_volume), dim, par);
+	return implementation->run(out_volume, in_volume, dim, par);
 }
-void Solver::run(double *&out_volume, const double *in_volume), const ArrayDim3 &dim, const Par3 &par)
+void Solver3::run(double *&out_volume, const double *in_volume, const ArrayDim3 &dim, const Par3 &par)
 {
 	set_implementation_real<double>(implementation, par); if (!implementation) { return; }
-	return implementation->run(out_volume, in_volume), dim, par);
+	return implementation->run(out_volume, in_volume, dim, par);
 }
-void Solver::run(unsigned char *&out_volume, const unsigned char *in_volume), const ArrayDim3 &dim, const Par3 &par)
+void Solver3::run(unsigned char *&out_volume, const unsigned char *in_volume, const ArrayDim3 &dim, const Par3 &par)
 {
 	set_implementation(implementation, par); if (!implementation) { return; }
-	return implementation->run(out_volume, in_volume), dim, par);
+	return implementation->run(out_volume, in_volume, dim, par);
 }
 

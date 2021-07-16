@@ -78,7 +78,9 @@ int example_batchprocessing(int argc, char **argv)
 
     int row1d = -1;
     get_param("row1d", row1d, argc, argv);
-    if (par.verbose) std::cout << "  row1d: "; if (row1d == -1) std::cout << "-1 (processing as 2d image)" << std::endl; else std::cout << "processing only row " << row1d << " as 1d image" << std::endl;
+    if (par.verbose) std::cout << "  row1d: "; 
+    if (row1d == -1) std::cout << "-1 (processing as 2d image)" << std::endl; 
+    else std::cout << "processing only row " << row1d << " as 1d image" << std::endl; 
 
     bool show_result = true;
     get_param("show", show_result, argc, argv);
@@ -177,11 +179,7 @@ int example_batchprocessing(int argc, char **argv)
         	cv::waitKey(0);
         }
     }
-<<<<<<< Updated upstream
 	cv::destroyAllWindows();
-=======
-    cv::destroyAllWindows();
->>>>>>> Stashed changes
 #else
 	std::cerr << "ERROR: " << __FILE__ << ": OpenCV disabled in compilation, but this example requires OpenCV." << std::endl;
 #endif // DISABLE_OPENCV

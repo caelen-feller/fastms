@@ -350,7 +350,7 @@ private:
 
 template<typename real> VolumeSolverHost<real>::VolumeSolverHost() : implementation(NULL) {	implementation = new VolumeSolverHostImplementation<real>(); }
 template<typename real> VolumeSolverHost<real>::~VolumeSolverHost() { delete implementation; }
-template<typename real> BaseVolume* VolumeSolverHost<real>::run(const BaseVolume *volume, const Par &par) { return implementation->run(volume, par); }
+template<typename real> BaseVolume* VolumeSolverHost<real>::run(const BaseVolume *volume, const Par3 &par) { return implementation->run(volume, par); }
 
 template class VolumeSolverHost<float>;
 template class VolumeSolverHost<double>;
