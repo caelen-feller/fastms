@@ -59,6 +59,7 @@ ARGS_GXX += -Wall
 ARGS_GXX += -O3
 ARGS_GXX += -m64
 ARGS_GXX += -fPIC
+ARGS_GXX += -g
 ifeq ($(USE_OPENMP), 1)
 	ARGS_GXX += -fopenmp
 endif

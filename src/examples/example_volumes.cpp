@@ -21,10 +21,13 @@
 
 #include "solver/volume_solver.h"
 #include "param.h"
-#include <iostream>
-#include <vector>
-#include <algorithm>
 #include "util.h"
+
+#include <cmath>
+#include <vector>
+#include <iostream>
+#include <ctime>
+#include <algorithm>
 
 
 int example_volumes(int argc, char **argv)
@@ -72,17 +75,17 @@ int example_volumes(int argc, char **argv)
     if (par.verbose) { par.print(); }
     std::cout << std::endl;
 
-    int row1d = -1;
-    get_param("row1d", row1d, argc, argv);
-    if (par.verbose) std::cout << "  row1d: "; 
-    if (row1d == -1) std::cout << "-1 (processing as 2d image)" << std::endl; 
-    else std::cout << "processing only row " << row1d << " as 1d image" << std::endl; 
+    int slice2d = -1;
+    get_param("slice2d", slice2d, argc, argv);
+    if (par.verbose) std::cout << "  slice2d: "; 
+    if (slice2d == -1) std::cout << "-1 (processing as 2d image)" << std::endl; 
+    else std::cout << "processing only slice " << slice2d << " as 2d image" << std::endl; 
 
     bool show_result = true;
     get_param("show", show_result, argc, argv);
     if (par.verbose) std::cout << "  show: " << show_result << std::endl;
 
-    std::string save_dir = "images_output";
+    std::string save_dir = "volumes_output";
     get_param("save", save_dir, argc, argv);
     bool save_result = (save_dir != "");
     if (par.verbose && save_result) { std::cout << "  save (RESULTS DIRECTORY): " << save_dir.c_str() << std::endl; }
@@ -117,11 +120,11 @@ int example_volumes(int argc, char **argv)
     }
 
     // for 1d processing: extract rows
-    if (row1d >= 0)
+    if (slice2d >= 0)
     {
         for (int i = 0; i < (int)input_images.size(); i++)
         {
-        	input_images[i] = extract_row(input_images[i], row1d);
+        	input_images[i] = extract_row(input_images[i], slice2d);
         }
     }
 
@@ -135,7 +138,7 @@ int example_volumes(int argc, char **argv)
     }
 
     // for 1d processing: replace 1d input and result with its graph visualization
-    if (row1d >= 0)
+    if (slice2d >= 0)
     {
     	int graph_height = 200;
     	double thresh_jump = (par.alpha > 0.0? std::sqrt(par.lambda / par.alpha) : -1.0);
@@ -155,7 +158,7 @@ int example_volumes(int argc, char **argv)
         	std::string dir;
 			std::string basename;
 			FilesUtil::to_dir_basename(input_names[i], dir, basename);
-			if (row1d >= 0) { std::stringstream s; s << "_row" << row1d; basename += s.str(); }
+			if (slice2d >= 0) { std::stringstream s; s << "_row" << slice2d; basename += s.str(); }
 
 			std::string out_dir = save_dir + '/' + dir;
 			if (!FilesUtil::mkdir(out_dir)) { std::cerr << "ERROR: Could not create output directory " << out_dir.c_str() << std::endl; continue; }

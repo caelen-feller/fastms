@@ -34,14 +34,17 @@ int main(int argc, char **argv)
 
 	bool use_cam = false;
   bool use_vol = true;
-  get_param("vol", use_vol, arc, argv);
+  get_param("vol", use_vol, argc, argv);
 	get_param("cam", use_cam, argc, argv);
 
     std::vector<std::string> inputfiles;
     get_param("i", inputfiles, argc, argv);
 
 
-    if (use_vol &&)
+    if (use_vol && inputfiles.size() <= 1)
+    {
+      return example_volumes(argc, argv);
+    }
 
     if (use_cam || inputfiles.size() <= 1)
     {

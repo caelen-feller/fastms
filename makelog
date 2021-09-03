@@ -1,0 +1,4 @@
+g++ -c -o tmp/src/examples/main.cpp.o src/examples/main.cpp -Wall -O3 -m64 -fPIC -g -fopenmp -Isrc/libfastms -I/usr/local/cuda-11.4/bin/../include -DDISABLE_OPENCV -DDISABLE_MEX
+g++ -c -o tmp/src/examples/example_batchprocessing.cpp.o src/examples/example_batchprocessing.cpp -Wall -O3 -m64 -fPIC -g -fopenmp -Isrc/libfastms -I/usr/local/cuda-11.4/bin/../include -DDISABLE_OPENCV -DDISABLE_MEX
+g++ -c -o tmp/src/examples/example_volumes.cpp.o src/examples/example_volumes.cpp -Wall -O3 -m64 -fPIC -g -fopenmp -Isrc/libfastms -I/usr/local/cuda-11.4/bin/../include -DDISABLE_OPENCV -DDISABLE_MEX
+g++ -o main tmp/src/examples/main.cpp.o tmp/src/examples/example_batchprocessing.cpp.o tmp/src/examples/example_gui.cpp.o tmp/src/examples/example_volumes.cpp.o tmp/src/libfastms/libfastms.o -L/usr/local/cuda-11.4/bin/../lib64 -lcudart -lcublas -lgomp
