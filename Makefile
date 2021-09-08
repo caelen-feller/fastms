@@ -19,14 +19,16 @@
 
 all: targets
 
-USE_CUDA:=1
+USE_CUDA:=0
 USE_OPENMP:=1
-USE_OPENCV:=0
+USE_OPENCV:=1
 USE_MEX:=0
 
 TMP_DIR:=tmp
 
-
+# Only neccesary if compiling on Windows otherwise pkgconfig should handle 
+WIN_OPENCV_INCLUDES:= -I/c/tools/opencv/build/include
+WIN_OPENCV_LIBS:=
 
 LIBS:=
 DEFINES:=
@@ -40,9 +42,12 @@ INCLUDES += -I$(SOLVER_SOURCE_DIR)
 # check if mac or linux
 UNAME:=$(shell uname)
 ifeq ($(UNAME), Darwin)
-   MAC:=1
+    MAC:=1
 else ifeq ($(UNAME), Linux)
-	 MAC:=0
+	MAC:=0
+else ifeq ($(UNAME), MINGW64_NT-10.0)
+    MAC:=0
+    MINGW:=1
 else
    $(error Unexpected system: $(UNAME))
 endif
@@ -61,7 +66,7 @@ ARGS_GXX += -m64
 ARGS_GXX += -fPIC
 ARGS_GXX += -g
 ifeq ($(USE_OPENMP), 1)
-	ARGS_GXX += -fopenmp
+	ARGS_GXX += -fopenmp 
 endif
 COMMAND_COMPILE_GXX=$(GXX) -c -o $@ $< $(ARGS_GXX) $(INCLUDES) $(DEFINES)
 COMMAND_GET_DEPENDENCIES_GXX=@$(GXX) -M $< $(ARGS_GXX) $(INCLUDES) $(DEFINES) > $@.dep
@@ -110,16 +115,24 @@ endif
 
 # opencv
 ifeq ($(USE_OPENCV), 1)
-    OPENCV_EXISTS:=$(shell pkg-config --exists opencv4; echo $$?)
-    ifneq ($(OPENCV_EXISTS), 0)
-        $(info WARNING: OpenCV not found, disabling OpenCV in compilation.)
-        USE_OPENCV:=
+    ifeq ($(MINGW), 1)
+        USE_OPENCV:=1
+    else 
+        OPENCV_EXISTS:=$(shell pkg-config --exists opencv4; echo $$?)
+        ifneq ($(OPENCV_EXISTS), 0)
+            $(info WARNING: OpenCV not found, disabling OpenCV in compilation.)
+            USE_OPENCV:=0
+        endif
     endif
-endif#
-#USE_OPENCV:=1
-ifeq ($(USE_OPENCV), 1)
-    LIBS += $(shell pkg-config --libs opencv4;)
-	INCLUDES += $(shell pkg-config --cflags opencv4;)
+endif
+ifeq ($(USE_OPENCV), 1) 
+    ifeq ($(MINGW), 1)
+        LIBS += $(WIN_OPENCV_LIBS)
+        INCLUDES += $(WIN_OPENCV_INCLUDES)
+    else   
+        LIBS += $(shell pkg-config --libs opencv4;)
+        INCLUDES += $(shell pkg-config --cflags opencv4;)
+    endif
 else
     DEFINES += -DDISABLE_OPENCV
 endif
