@@ -19,14 +19,16 @@
 
 all: targets
 
-USE_CUDA:=1
+USE_CUDA:=0
 USE_OPENMP:=1
-USE_OPENCV:=0
-USE_MEX:=0
+USE_OPENCV:=1
+USE_MEX:=1
 
 TMP_DIR:=tmp
 
-
+WINDOWS:=1
+MINGW_GXX:=x86_64-w64-mingw32-g++-posix
+MINGW_LD:=x86_64-w64-mingw32-ld
 
 LIBS:=
 DEFINES:=
@@ -51,8 +53,13 @@ endif
 # c++
 ifeq ($(MAC), 1)
     GXX:=/usr/local/bin/g++-4.2
+    LD:=ld
+else ifeq ($(WINDOWS), 1)
+    GXX:=$(MINGW_GXX)
+    LD:=$(MINGW_LD)
 else
     GXX:=g++
+    LD:=ld
 endif
 ARGS_GXX:=
 ARGS_GXX += -Wall
@@ -137,7 +144,7 @@ SOLVER_DEPENDENCIES:=$(foreach file, $(SOLVER_OBJECTS), $(file).dep)
 -include $(SOLVER_DEPENDENCIES)
 SOLVER_TARGET:=$(TMP_DIR)/$(SOLVER_SOURCE_DIR)/libfastms.o
 TARGETS += $(SOLVER_TARGET)
-COMMAND_LINK_SOLVER=ld -r -o $@ $^
+COMMAND_LINK_SOLVER=$(LD) -r -o $@ $^
 
 
 

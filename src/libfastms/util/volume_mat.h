@@ -24,16 +24,19 @@
 #include <vector>
 
 struct VolMat{
-	VolMat(const ArrayDim3 dim, int depth) : dim(dim), depth(depth) { data = std::vector<unsigned char>(dim.num_elem());}
-	std::vector<unsigned char> data;
+	VolMat() {}
+	VolMat(const ArrayDim3 dim, int depth) : dim(dim), depth(depth) { data = new std::vector<unsigned char>(dim.num_elem());}
+	~VolMat() { delete data; }
+	std::vector<unsigned char>* data;
 	ArrayDim3 dim;
 	int depth;
 }
 
 
-void show_volume(std::string title, const VolMat vol, int x_window, int y_window, int z_window);
+// TODO: Some display functions
+// void show_volume(std::string title, const VolMat vol, int x_window, int y_window, int z_window);
 // float* image1d_to_graph(const cv::Mat &mat, int graph_height, int channel_id = -1, double thresh_jump = -1.0);
-VolMat extract_slice(const VolMat vol, int slice);  // extract a slice from a 3d volume, to process this slice as a single 2d image
+// VolMat extract_slice(const VolMat vol, int slice);  // extract a slice from a 3d volume, to process this slice as a single 2d image
 
 // TODO: Dynamic bit depth
 struct VolDepth { static const int value =  256; };
@@ -41,6 +44,7 @@ struct VolDepth { static const int value =  256; };
 class MatVolume: public BaseVolume
 {
 public:
+	MatVolume() { mat = VolMat(); }
 	MatVolume(VolMat volume) { mat = volume; }
 	MatVolume(const ArrayDim3 &dim, int depth) { mat = VolMat(dim, depth); }
 	virtual ~MatVolume() {}

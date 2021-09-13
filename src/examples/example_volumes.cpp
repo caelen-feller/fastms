@@ -21,7 +21,9 @@
 
 #include "solver/volume_solver.h"
 #include "param.h"
-#include "util.h"
+#include "volume_util.h"
+#include "util/volume_mat.h"
+
 
 #include <cmath>
 #include <vector>
@@ -40,7 +42,7 @@ int example_volumes(int argc, char **argv)
     if (show_help) { std::cout << "Usage: " << argv[0] << " -i <inputfiles>" << std::endl; return 0; }
 
     // get params
-    Par par;
+    Par3 par;
     get_param("verbose", par.verbose, argc, argv);
     if (par.verbose) std::cout << std::boolalpha;
     get_param("lambda", par.lambda, argc, argv);
@@ -83,37 +85,41 @@ int example_volumes(int argc, char **argv)
 
     bool show_result = true;
     get_param("show", show_result, argc, argv);
-    if (par.verbose) std::cout << "  show: " << show_result << std::endl;
+    if (show_result) std::cout << "Result showing is unimplemented at this stage" << std::endl;
 
-    std::string save_dir = "volumes_output";
+    std::string save_dir = "volume_output";
     get_param("save", save_dir, argc, argv);
     bool save_result = (save_dir != "");
     if (par.verbose && save_result) { std::cout << "  save (RESULTS DIRECTORY): " << save_dir.c_str() << std::endl; }
-    else { std::cout << "  save (results directory): empty (result saving disabled))" << std::endl; }
+    else { std::cout << "  save (results directory): empty (result #else
+	std::cerr << "ERROR: " << __FILE__ << ": OpenCV disabled in compilation, but this example requires OpenCV." << std::endl;
+#endif // DISABLE_OPENCV
+saving disabled))" << std::endl; }
 
     std::cout << std::endl;
 
-#ifndef DISABLE_OPENCV
-    // get input files
     std::vector<std::string> input_names;
-    std::vector<cv::Mat> input_images;
+    // TODO: Support for image stacks (2d vec of opencv images)
+    std::vector<MatVolume> input_volumes;
+
     std::vector<std::string> inputfiles;
     bool has_i_param = get_param("i", inputfiles, argc, argv);
     if (!has_i_param)
     {
-    	std::string default_file = "images/hepburn.png";
+    	std::string default_file = "volumes/sphere.data";
     	//std::cerr << "Using " << default_file << " (no option \"-i <inputfiles>\" given)" << std::endl;
     	inputfiles.push_back(default_file);
     }
-	//if (par.verbose) std::cout << "loading input files" << std::endl;
+    
+	if (par.verbose) std::cout << "loading input files" << std::endl;
 	for (int i = 0; i < (int)inputfiles.size(); i++)
 	{
-		cv::Mat input_image = cv::imread(inputfiles[i].c_str());
-		if (input_image.data == NULL) { std::cerr << "ERROR: Could not load image " << inputfiles[i].c_str() << std::endl; continue; }
-		input_images.push_back(input_image);
+		MatVolume input_volume = volread(inputfiles[i].c_str());
+		if (input_volume.mat.data == NULL) { std::cerr << "ERROR: Could not load volume " << inputfiles[i].c_str() << std::endl; continue; }
+		input_volumes.push_back(input_volume);
 		input_names.push_back(inputfiles[i]);
 	}
-    if (input_images.size() == 0)
+    if (input_volumes.size() == 0)
     {
     	std::cerr << "No input files" << std::endl;
     	return -1;
@@ -122,19 +128,19 @@ int example_volumes(int argc, char **argv)
     // for 1d processing: extract rows
     if (slice2d >= 0)
     {
-        for (int i = 0; i < (int)input_images.size(); i++)
+        for (int i = 0; i < (int)input_volumes.size(); i++)
         {
-        	input_images[i] = extract_row(input_images[i], slice2d);
+        	input_volumes[i] = extract_row(input_volumes[i], slice2d);
         }
     }
 
     // process
-    std::vector<cv::Mat> result_images(input_images.size());
+    std::vector<cv::Mat> result_volumes(input_volumes.size());
     Solver solver;
-    for (int i = 0; i < (int)input_images.size(); i++)
+    for (int i = 0; i < (int)input_volumes.size(); i++)
     {
     	if (par.verbose) std::cout << input_names[i].c_str() << ":  ";
-    	result_images[i] = solver.run(input_images[i], par);
+    	result_volumes[i] = solver.run(input_volumes[i], par);
     }
 
     // for 1d processing: replace 1d input and result with its graph visualization
@@ -142,10 +148,10 @@ int example_volumes(int argc, char **argv)
     {
     	int graph_height = 200;
     	double thresh_jump = (par.alpha > 0.0? std::sqrt(par.lambda / par.alpha) : -1.0);
-        for (int i = 0; i < (int)result_images.size(); i++)
+        for (int i = 0; i < (int)result_volumes.size(); i++)
         {
-        	input_images[i] = image1d_to_graph(input_images[i], graph_height, -1.0);
-        	result_images[i] = image1d_to_graph(result_images[i], graph_height, thresh_jump);
+        	input_volumes[i] = volume1d_to_graph(input_volumes[i], graph_height, -1.0);
+        	result_volumes[i] = volume1d_to_graph(result_volumes[i], graph_height, thresh_jump);
         }
     }
 
@@ -153,7 +159,7 @@ int example_volumes(int argc, char **argv)
     // show results
     if (save_result)
     {
-        for (int i = 0; i < (int)input_images.size(); i++)
+        for (int i = 0; i < (int)input_volumes.size(); i++)
         {
         	std::string dir;
 			std::string basename;
@@ -164,24 +170,21 @@ int example_volumes(int argc, char **argv)
 			if (!FilesUtil::mkdir(out_dir)) { std::cerr << "ERROR: Could not create output directory " << out_dir.c_str() << std::endl; continue; }
 			std::string out_file_input = out_dir + '/' + basename + "__input.png";
 			std::string out_file_result = out_dir + '/' + basename + "__result" + par_to_string(par) + ".png";
-			if (!cv::imwrite(out_file_input, input_images[i])) { std::cerr << "ERROR: Could not save input image " << out_file_input.c_str() << std::endl; continue; }
-			if (!cv::imwrite(out_file_result, result_images[i])) { std::cerr << "ERROR: Could not save result image " << out_file_result.c_str() << std::endl; continue; }
+			if (!cv::imwrite(out_file_input, input_volumes[i])) { std::cerr << "ERROR: Could not save input volume " << out_file_input.c_str() << std::endl; continue; }
+			if (!cv::imwrite(out_file_result, result_volumes[i])) { std::cerr << "ERROR: Could not save result volume " << out_file_result.c_str() << std::endl; continue; }
 			std::cout << "SAVED RESULT: " << out_file_result.c_str() << "  (SAVED INPUT: " << out_file_input.c_str() << ")" << std::endl;
         }
     }
     if (show_result)
     {
-        for (int i = 0; i < (int)input_images.size(); i++)
+        for (int i = 0; i < (int)input_volumes.size(); i++)
         {
-        	show_image("Input", input_images[i], 100, 100);
-        	show_image("Output", result_images[i], 100 + input_images[i].cols + 40, 100);
+        	show_volume("Input", input_volumes[i], 100, 100);
+        	show_volume("Output", result_volumes[i], 100 + input_volumes[i].cols + 40, 100);
         	cv::waitKey(0);
         }
     }
 	cv::destroyAllWindows();
-#else
-	std::cerr << "ERROR: " << __FILE__ << ": OpenCV disabled in compilation, but this example requires OpenCV." << std::endl;
-#endif // DISABLE_OPENCV
 
 	return 0;
 }
