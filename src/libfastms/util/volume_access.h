@@ -221,7 +221,7 @@ private:
 	HOST_DEVICE size_t offset(int x, int y, int z, int i) const
 	{
 		const DataIndex3 &data_index = data_interpretation_t::get(x, y, z, i, volume_data_.dim_);
-		// This might not be right!
+		// TODO: This might not be right!
 		return data_index.x * sizeof(T) + volume_data_.data_pitch_ * data_index.y + volume_data_.data_pitch_ * volume_data_.dim_.h * data_index.z;
 	}
 	HOST_DEVICE DataDim3 used_data_dim() const { return data_interpretation_t::used_data_dim(volume_data_.dim_, sizeof(T)); }

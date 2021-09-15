@@ -41,6 +41,8 @@ struct Par3
 		engine = engine_cuda;
 		verbose = true;
 	}
+	// VolMat
+	VolMat run(const VolMat in_image, const Par3 &par);
 
 	void print() const
 	{
@@ -166,6 +168,8 @@ public:
 	// interlaced char
 	void run(unsigned char *&out_volume, const unsigned char *in_volume, const ArrayDim3 &dim, const Par3 &par);
 
+	// VolMat
+	VolMat run(const VolMat in_image, const Par3 &par);
 
 private:
 	Solver3(const Solver3 &other_solver);  // disable

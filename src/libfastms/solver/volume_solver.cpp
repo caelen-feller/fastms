@@ -23,6 +23,7 @@
 #ifndef DISABLE_CUDA
 #include "volume_solver_device.h"
 #endif // not DISABLE_CUDA
+#include "util/vol_mat.h"
 
 #include "util/volume.h"
 #include "util/types_equal.h"
@@ -45,6 +46,9 @@ public:
 
 	// interlaced char
 	virtual void run(unsigned char *&out_volume, const unsigned char *in_volume, const ArrayDim3 &dim, const Par3 &par) = 0;
+	
+	// VolMat
+	virtual VolMat run(const VolMat in_volume, const Par3 &par) = 0;
 
 	virtual int get_class_type() = 0; // for is_instance_of()
 };
@@ -84,8 +88,8 @@ public:
 		if (out_volume)
 		{
 			// copy
-			managed_volume_t outimage_managed(out_volume, dim);
-			outimage_managed.copy_from_samekind(out_managed);
+			managed_volume_t outvolume_managed(out_volume, dim);
+			outvolume_managed.copy_from_samekind(out_managed);
 		}
 		else
 		{
@@ -105,8 +109,8 @@ public:
 		if (out_volume)
 		{
 			// copy
-			managed_volume_t outimage_managed(out_volume, dim);
-			outimage_managed.copy_from_samekind(out_managed);
+			managed_volume_t outvolume_managed(out_volume, dim);
+			outvolume_managed.copy_from_samekind(out_managed);
 		}
 		else
 		{
@@ -115,6 +119,16 @@ public:
 		}
 		delete out_managed;
 	}
+
+	virtual VolMat run(const VolMat in_volume, const Par3 &par)
+	{
+		MatVolume in_matvolume(in_volume);
+		MatVolume *out_matvolume = static_cast<MatVolume*>(solver.run(&in_matvolume, par));
+		VolMat out_mat = out_matvolume->get_mat();
+		delete out_matvolume;
+		return out_mat;
+	}
+
 
 
 	int get_class_type() { return class_type; }
@@ -225,4 +239,8 @@ void Solver3::run(unsigned char *&out_volume, const unsigned char *in_volume, co
 	set_implementation(implementation, par); if (!implementation) { return; }
 	return implementation->run(out_volume, in_volume, dim, par);
 }
-
+VolMat Solver3::run(const VolMat in_volume, const Par3 &par)
+{
+	set_implementation(implementation, par); if (!implementation) { return VolMat(); }
+	return implementation->run(in_volume, par);
+}

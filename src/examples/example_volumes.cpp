@@ -61,11 +61,11 @@ int example_volumes(int argc, char **argv)
         	std::transform(s_engine.begin(), s_engine.end(), s_engine.begin(), ::tolower);
         	if (s_engine.find("cpu") == 0 || s_engine.find("host") == 0)
         	{
-        		par.engine = Par::engine_cpu;
+        		par.engine = Par3::engine_cpu;
         	}
         	else if (s_engine.find("cuda") == 0 || s_engine.find("device") == 0)
         	{
-        		par.engine = Par::engine_cuda;
+        		par.engine = Par3::engine_cuda;
         	}
         	else
         	{
@@ -91,16 +91,14 @@ int example_volumes(int argc, char **argv)
     get_param("save", save_dir, argc, argv);
     bool save_result = (save_dir != "");
     if (par.verbose && save_result) { std::cout << "  save (RESULTS DIRECTORY): " << save_dir.c_str() << std::endl; }
-    else { std::cout << "  save (results directory): empty (result #else
-	std::cerr << "ERROR: " << __FILE__ << ": OpenCV disabled in compilation, but this example requires OpenCV." << std::endl;
-#endif // DISABLE_OPENCV
-saving disabled))" << std::endl; }
+    // TODO: what is this behaviour does it not always say this if not verbose? 
+    else { std::cout << "  save (results directory): empty (result saving disabled))" << std::endl; }
 
     std::cout << std::endl;
 
     std::vector<std::string> input_names;
     // TODO: Support for image stacks (2d vec of opencv images)
-    std::vector<MatVolume> input_volumes;
+    std::vector<VolMat> input_volumes;
 
     std::vector<std::string> inputfiles;
     bool has_i_param = get_param("i", inputfiles, argc, argv);
@@ -114,8 +112,8 @@ saving disabled))" << std::endl; }
 	if (par.verbose) std::cout << "loading input files" << std::endl;
 	for (int i = 0; i < (int)inputfiles.size(); i++)
 	{
-		MatVolume input_volume = volread(inputfiles[i].c_str());
-		if (input_volume.mat.data == NULL) { std::cerr << "ERROR: Could not load volume " << inputfiles[i].c_str() << std::endl; continue; }
+		VolMat input_volume = volread(inputfiles[i].c_str());
+		if (input_volume.data == NULL) { std::cerr << "ERROR: Could not load volume " << inputfiles[i].c_str() << std::endl; continue; }
 		input_volumes.push_back(input_volume);
 		input_names.push_back(inputfiles[i]);
 	}
@@ -125,7 +123,7 @@ saving disabled))" << std::endl; }
     	return -1;
     }
 
-    // for 1d processing: extract rows
+    // for 2d processing: extract slices
     if (slice2d >= 0)
     {
         for (int i = 0; i < (int)input_volumes.size(); i++)
@@ -135,56 +133,33 @@ saving disabled))" << std::endl; }
     }
 
     // process
-    std::vector<cv::Mat> result_volumes(input_volumes.size());
-    Solver solver;
+    std::vector<VolMat> result_volumes(input_volumes.size());
+    Solver3 solver;
     for (int i = 0; i < (int)input_volumes.size(); i++)
     {
     	if (par.verbose) std::cout << input_names[i].c_str() << ":  ";
     	result_volumes[i] = solver.run(input_volumes[i], par);
     }
 
-    // for 1d processing: replace 1d input and result with its graph visualization
-    if (slice2d >= 0)
-    {
-    	int graph_height = 200;
-    	double thresh_jump = (par.alpha > 0.0? std::sqrt(par.lambda / par.alpha) : -1.0);
-        for (int i = 0; i < (int)result_volumes.size(); i++)
-        {
-        	input_volumes[i] = volume1d_to_graph(input_volumes[i], graph_height, -1.0);
-        	result_volumes[i] = volume1d_to_graph(result_volumes[i], graph_height, thresh_jump);
-        }
-    }
-
 
     // show results
-    if (save_result)
-    {
-        for (int i = 0; i < (int)input_volumes.size(); i++)
-        {
-        	std::string dir;
-			std::string basename;
-			FilesUtil::to_dir_basename(input_names[i], dir, basename);
-			if (slice2d >= 0) { std::stringstream s; s << "_row" << slice2d; basename += s.str(); }
+    if (!save_result) return 1;
 
-			std::string out_dir = save_dir + '/' + dir;
-			if (!FilesUtil::mkdir(out_dir)) { std::cerr << "ERROR: Could not create output directory " << out_dir.c_str() << std::endl; continue; }
-			std::string out_file_input = out_dir + '/' + basename + "__input.png";
-			std::string out_file_result = out_dir + '/' + basename + "__result" + par_to_string(par) + ".png";
-			if (!cv::imwrite(out_file_input, input_volumes[i])) { std::cerr << "ERROR: Could not save input volume " << out_file_input.c_str() << std::endl; continue; }
-			if (!cv::imwrite(out_file_result, result_volumes[i])) { std::cerr << "ERROR: Could not save result volume " << out_file_result.c_str() << std::endl; continue; }
-			std::cout << "SAVED RESULT: " << out_file_result.c_str() << "  (SAVED INPUT: " << out_file_input.c_str() << ")" << std::endl;
-        }
-    }
-    if (show_result)
+    for (int i = 0; i < (int)input_volumes.size(); i++)
     {
-        for (int i = 0; i < (int)input_volumes.size(); i++)
-        {
-        	show_volume("Input", input_volumes[i], 100, 100);
-        	show_volume("Output", result_volumes[i], 100 + input_volumes[i].cols + 40, 100);
-        	cv::waitKey(0);
-        }
+        std::string dir;
+        std::string basename;
+        FilesUtil::to_dir_basename(input_names[i], dir, basename);
+        if (slice2d >= 0) { std::stringstream s; s << "_slice" << slice2d; basename += s.str(); }
+
+        std::string out_dir = save_dir + '/' + dir;
+        if (!FilesUtil::mkdir(out_dir)) { std::cerr << "ERROR: Could not create output directory " << out_dir.c_str() << std::endl; continue; }
+        std::string out_file_input = out_dir + '/' + basename + "__input.dat";
+        std::string out_file_result = out_dir + '/' + basename + "__result" + par_to_string(par) + ".dat";
+        if (!volwrite(out_file_input, input_volumes[i])) { std::cerr << "ERROR: Could not save input volume " << out_file_input.c_str() << std::endl; continue; }
+        if (!volwrite(out_file_result, result_volumes[i])) { std::cerr << "ERROR: Could not save result volume " << out_file_result.c_str() << std::endl; continue; }
+        std::cout << "SAVED RESULT: " << out_file_result.c_str() << "  (SAVED INPUT: " << out_file_input.c_str() << ")" << std::endl;
     }
-	cv::destroyAllWindows();
 
 	return 0;
 }

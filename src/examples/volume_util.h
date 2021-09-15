@@ -99,24 +99,63 @@ std::string inline str_curtime()
 	return std::string(buffer);
 }
 
-MatVolume volread(const char* filename)
+VolMat void volread(const char* filename)
 {
 	std::ifstream rf(filename, std::ios::binary);
 	if(!rf)
 	{
 		std::cerr << "Cannot open " << filename << std::endl;
-		return MatVolume();
-		        // TODO: CONTINUE HERE MONDAY
-
+		return VolMat();
 	}
 
+	// Allocate the read space based on std header (tuple of dim + channels)
+	ArrayDim3 dim = ArrayDim3();
+	rf.read( (char *) &dim, sizeof(ArrayDim3));
+
+	if(!rf.good()) 
+	{
+		std::cerr << "Error reading header from " << filename << std::endl;
+		return VolMat();
+	}
+
+	volume = VolMat(dim, VolDepth.value);
+
+	// for(int i = 0; i < dim.num_elem(); i++)
+	// {
+	// 	rf.read((char *) &volume.data[i], sizeof(unsigned char));
+	// }
+	rf.read((char *) &volume.data, sizeof(unsigned char) * dim.num_elem());
+
+	if(!rf.good()) 
+	{
+		std::cerr << "Error reading data from " << filename << std::endl;
+		return VolMat();
+	}
+
+	// Clean up
+	rf.close();
+	return volume;
 }
 
-void volwrite(const char* filename, const MatVolume& volume)
+bool volwrite(const char* filename, const VolMat& volume)
 {
-	// Write it! 
-	        // TODO: CONTINUE HERE MONDAY
+	std::ofstream wf(filename, ios::out | ios::binary);
+	if(!wf)
+	{
+		std::cout << "Cannot open " << filename << std::endl;
+		return false;
+	}
 
+	wf.write((char *) &volume.dim, sizeof(ArrayDim3))
+	wf.write((char *) &volume.data, sizeof(unsigned char) * volume.dim.num_elem());
+	
+	if(!wf.good()) 
+	{
+		std::cout << "Error occurred writing to " << filename << std::endl;
+		return false;
+	}
+
+	return true;
 }
 
 #endif // EXAMPLES_UTIL_H

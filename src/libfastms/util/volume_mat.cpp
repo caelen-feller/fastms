@@ -23,18 +23,8 @@
 #include <iostream>
 
 
-// cv::Mat extract_row(const cv::Mat in_mat, int row)
-// {
-// 	// row image will have the same number of channels as the input image
-// 	int w = in_mat.cols;
-// 	int h = in_mat.rows;
-// 	if (row < 0 || row >= h)
-// 	{
-// 		int row_new = std::max(0, std::min(h - 1, row));
-// 		std::cerr << "WARNING: extract_row: " << row << " is not a valid row (0 .. " << h - 1 << "), using row = " << row_new << std::endl;
-// 		row = row_new;
-// 	}
-// 	cv::Mat mat_row(1, w, in_mat.type(), cv::Scalar::all(0));
-// 	memcpy(mat_row.data, in_mat.ptr(row), (size_t)w * in_mat.elemSize());
-// 	return mat_row;
-// }
+VolMat extract_slice(const VolMat in_mat, int slice)
+{
+    std::cout << "Feature unimplemented at this time, sorry" << std::endl;
+    return VolMat();
+}
