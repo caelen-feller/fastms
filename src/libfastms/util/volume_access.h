@@ -91,7 +91,7 @@ struct ArrayDim3
 };
 inline std::ostream& operator<< (std::ostream &out, const ArrayDim3 &dim)
 {
-	out << dim.w << " x " << dim.h << " x " << dim.num_channels;
+	out << dim.w << " x " << dim.h << " x "  << dim.d << " x " << dim.num_channels;
 	return out;
 }
 

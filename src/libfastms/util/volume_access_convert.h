@@ -37,13 +37,12 @@ void copy_volume_h2h_base(TUntypedAccessOut out, TUntypedAccessIn in)
 #if !defined(DISABLE_OPENMP) && defined(_OPENMP)
 	#pragma omp for
 #endif
-	for (int z = 0; z < dim3d.d; z++)
+	for (int i = 0; i < num_channels; i++)
 	{
-		for (int i = 0; i < num_channels; i++)
+		for (int z = 0; z < dim3d.d; z++)
 		{
 			for (int y = 0; y < dim3d.h; y++)
 			{
-				
 				for (int x = 0; x < dim3d.w; x++)
 				{
 					convert_type(out_kind, in_kind, out.get_address(x, y, z, i), in.get_address(x, y, z, i));

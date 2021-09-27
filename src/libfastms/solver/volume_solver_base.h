@@ -94,6 +94,7 @@ private:
 	{
 		size_t alloc(Engine3<real> *engine, const ArrayDim3 &dim_u, const ArrayDim3 &dim_p)
 		{
+			// TODO: MULTICHANNEL
 			ArrayDim3 dim_scalar(dim_u.w, dim_u.h, dim_u.d, 1);
 			size_t mem = 0;
 			mem += engine->volume_manager()->alloc(u, dim_u);

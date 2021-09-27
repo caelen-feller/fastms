@@ -80,7 +80,7 @@ int example_volumes(int argc, char **argv)
     int slice2d = -1;
     get_param("slice2d", slice2d, argc, argv);
     if (par.verbose) std::cout << "  slice2d: "; 
-    if (slice2d == -1) std::cout << "-1 (processing as 2d image)" << std::endl; 
+    if (slice2d == -1 && par.verbose) std::cout << "-1 (processing as 3D volume)" << std::endl; 
     else std::cout << "processing only slice " << slice2d << " as 2d image" << std::endl; 
 
     bool show_result = true;
@@ -104,7 +104,7 @@ int example_volumes(int argc, char **argv)
     bool has_i_param = get_param("i", inputfiles, argc, argv);
     if (!has_i_param)
     {
-    	std::string default_file = "volumes/sphere.data";
+    	std::string default_file = "examples/volumes/sphere.dat";
     	//std::cerr << "Using " << default_file << " (no option \"-i <inputfiles>\" given)" << std::endl;
     	inputfiles.push_back(default_file);
     }
@@ -112,8 +112,8 @@ int example_volumes(int argc, char **argv)
 	if (par.verbose) std::cout << "loading input files" << std::endl;
 	for (int i = 0; i < (int)inputfiles.size(); i++)
 	{
-		VolMat input_volume = volread(inputfiles[i].c_str());
-		if (input_volume.data == NULL) { std::cerr << "ERROR: Could not load volume " << inputfiles[i].c_str() << std::endl; continue; }
+		VolMat input_volume = volread(inputfiles[i].c_str(), true);
+		if (input_volume.data.empty()) { std::cerr << "ERROR: Could not load volume " << inputfiles[i].c_str() << std::endl; continue; }
 		input_volumes.push_back(input_volume);
 		input_names.push_back(inputfiles[i]);
 	}
@@ -128,7 +128,7 @@ int example_volumes(int argc, char **argv)
     {
         for (int i = 0; i < (int)input_volumes.size(); i++)
         {
-        	input_volumes[i] = extract_row(input_volumes[i], slice2d);
+        	input_volumes[i] = extract_slice(input_volumes[i], slice2d);
         }
     }
 
@@ -156,8 +156,8 @@ int example_volumes(int argc, char **argv)
         if (!FilesUtil::mkdir(out_dir)) { std::cerr << "ERROR: Could not create output directory " << out_dir.c_str() << std::endl; continue; }
         std::string out_file_input = out_dir + '/' + basename + "__input.dat";
         std::string out_file_result = out_dir + '/' + basename + "__result" + par_to_string(par) + ".dat";
-        if (!volwrite(out_file_input, input_volumes[i])) { std::cerr << "ERROR: Could not save input volume " << out_file_input.c_str() << std::endl; continue; }
-        if (!volwrite(out_file_result, result_volumes[i])) { std::cerr << "ERROR: Could not save result volume " << out_file_result.c_str() << std::endl; continue; }
+        if (!volwrite(out_file_input.c_str(), input_volumes[i])) { std::cerr << "ERROR: Could not save input volume " << out_file_input.c_str() << std::endl; continue; }
+        if (!volwrite(out_file_result.c_str(), result_volumes[i])) { std::cerr << "ERROR: Could not save result volume " << out_file_result.c_str() << std::endl; continue; }
         std::cout << "SAVED RESULT: " << out_file_result.c_str() << "  (SAVED INPUT: " << out_file_input.c_str() << ")" << std::endl;
     }
 

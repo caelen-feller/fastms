@@ -29,7 +29,7 @@ struct VolMat{
 	std::vector<unsigned char> data;
 	ArrayDim3 dim;
 	int depth;
-}
+};
 
 
 // TODO: Some display functions
@@ -46,10 +46,10 @@ class MatVolume: public BaseVolume
 public:
 	MatVolume() { mat = VolMat(); }
 	MatVolume(VolMat volume) { mat = volume; }
-	MatVolume(const ArrayDim3 &dim, int depth) { mat = VolMat(dim, depth); }
+	MatVolume(const ArrayDim3 dim, int depth) { mat = VolMat(dim, depth); }
 	virtual ~MatVolume() {}
 
-	virtual BaseVolume* new_of_same_type_and_size() const { return new MatVolume(dim(), mat.depth()); }
+	virtual BaseVolume* new_of_same_type_and_size() const { return new MatVolume(mat.dim, mat.depth); }
 	virtual ArrayDim3 dim() const { return ArrayDim3(mat.dim.w, mat.dim.h, mat.dim.d, mat.dim.num_channels); }
 	virtual void copy_from_layered(const VolumeUntypedAccess<DataInterpretationLayered> &in) { copy_volume(this->get_untyped_access(), in); }
 	virtual void copy_to_layered(VolumeUntypedAccess<DataInterpretationLayered> out) const { copy_volume(out, this->get_untyped_access()); }
@@ -63,7 +63,7 @@ private:
 		return volume_untyped_access_t(get_data(), dim(), elem_kind(), true);  // true = on_host
 	}
 
-	void* get_data() const { return (void*)mat.data; }
+	void* get_data() const { return (void*)&mat.data; }
 	ElemKind elem_kind() const { return elem_kind_uchar; } // TODO: Dynamic typing
 
 	VolMat mat;

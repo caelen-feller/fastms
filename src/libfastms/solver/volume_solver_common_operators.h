@@ -40,7 +40,7 @@ class LinearOperator3
 public:
 	HOST_DEVICE static int num_channels_range(int num_channels_domain)
 	{
-		return 2 * num_channels_domain;
+		return 3 * num_channels_domain;
 	}
 
 	HOST_DEVICE static ArrayDim3 dim_range(const ArrayDim3 &dim_domain)
@@ -52,7 +52,7 @@ public:
 
 	HOST_DEVICE static real maximal_possible_range_norm(int num_channels_domain)
 	{
-		return realsqrt(real(2)) * num_channels_range(num_channels_domain);
+		return realsqrt(real(3)) * num_channels_range(num_channels_domain);
 	}
 
 	template<typename TArray, typename TAccess>
@@ -61,15 +61,17 @@ public:
 		for(int i = 0; i < u_num_channels; i++)
 		{
 			real u0 = u.get(x, y, z, i);
+			// Get forward difference - zero padded! 
 			real uplusx = (x + 1 < dim3d.w? u.get(x + 1, y, z, i) : real(0));
 			real uplusy = (y + 1 < dim3d.h? u.get(x, y + 1, z, i) : real(0));
-			real uplusz = (z + 1 < dim3d.d? u.get(x, y, z+1, i): real(0));
+			real uplusz = (z + 1 < dim3d.d? u.get(x, y, z + 1, i): real(0));
 			p.get(0 + 3 * i) = (x + 1 < dim3d.w? uplusx - u0 : real(0));
 			p.get(1 + 3 * i) = (y + 1 < dim3d.h? uplusy - u0 : real(0));
 			p.get(2 + 3 * i) = (z + 1 < dim3d.d? uplusz - u0 : real(0));
 		}
 	}
 
+	// initial value of sigma in PD descent
 	HOST_DEVICE real apply_sumcoeffs()
 	{
 		return real(2);
@@ -94,9 +96,10 @@ public:
 		}
 	}
 
+	// Initial value of tau in PD descent for 3 dims
 	HOST_DEVICE real apply_transpose_sumcoeffs()
 	{
-		return real(4);
+		return real(6);
 	}
 };
 
@@ -136,7 +139,7 @@ public:
 			u0 = f0 + (u0 - f0) / (real(1) + real(2) * dt * c0);
 			u.get(i) = u0;
 		}
-
+		//TODO: Temporal support
 		if (has_temporal())
 		{
 			for (int i = 0; i < u_num_channels; i++) { u.get(i) -= prev_u.get(x, y, z, i); }
@@ -177,6 +180,7 @@ public:
 		diff_f *= c0;
 		val += diff_f;
 
+		//TODO: TEMPORAL Support
 		if (has_temporal())
 		{
 			real diff_prev = 0;

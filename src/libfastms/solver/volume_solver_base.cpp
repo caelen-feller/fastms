@@ -210,6 +210,7 @@ BaseVolume* VolumeSolverBase<real>::run(const BaseVolume *volume, const Par3 &pa
     for (int iteration = 0; iteration < par.iterations; iteration++)
     {
     	pd_vars.update_vars();
+		if (iteration == 1200) std::cout << "here" << std::endl;
     	engine->run_dual_p(arr.p, arr.ubar, pd_vars.linear_operator, pd_vars.regularizer, pd_vars.dt_d);
     	engine->run_prim_u(arr.u, arr.ubar, arr.p, pd_vars.linear_operator, pd_vars.dataterm, pd_vars.theta_bar, pd_vars.dt_p);
     	if (is_converged(iteration)) { stats.stop_iteration = iteration; break; }

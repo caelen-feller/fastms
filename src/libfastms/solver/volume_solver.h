@@ -21,7 +21,7 @@
 #define VOLUME_SOLVER_H
 
 #include <iostream>
-
+#include "util/volume_mat.h"
 
 
 struct Par3

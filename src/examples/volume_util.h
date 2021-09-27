@@ -21,6 +21,7 @@
 #define EXAMPLES_UTIL_H
 
 #include <string>
+#include <sstream>
 #include <cstdlib>  // for system()
 #include <iostream>
 #include <fstream> 
@@ -99,9 +100,10 @@ std::string inline str_curtime()
 	return std::string(buffer);
 }
 
-VolMat void volread(const char* filename)
+VolMat volread(const char* filename, const bool text = 0)
 {
-	std::ifstream rf(filename, std::ios::binary);
+	std::ifstream rf(filename, text ? std::ios::in : std::ios::binary);
+
 	if(!rf)
 	{
 		std::cerr << "Cannot open " << filename << std::endl;
@@ -110,7 +112,8 @@ VolMat void volread(const char* filename)
 
 	// Allocate the read space based on std header (tuple of dim + channels)
 	ArrayDim3 dim = ArrayDim3();
-	rf.read( (char *) &dim, sizeof(ArrayDim3));
+	if(text) rf >> dim.w >> dim.h >> dim.d >> dim.num_channels;
+	else rf.read( (char *) &dim, sizeof(ArrayDim3));
 
 	if(!rf.good()) 
 	{
@@ -118,20 +121,17 @@ VolMat void volread(const char* filename)
 		return VolMat();
 	}
 
-	volume = VolMat(dim, VolDepth.value);
-
-	// for(int i = 0; i < dim.num_elem(); i++)
-	// {
-	// 	rf.read((char *) &volume.data[i], sizeof(unsigned char));
-	// }
-	rf.read((char *) &volume.data, sizeof(unsigned char) * dim.num_elem());
+	VolMat volume = VolMat(dim, VolDepth::value);
+	if(text) for(size_t i = 0; i < dim.num_elem(); i++) rf >> volume.data[i];
+	else rf.read((char *) &volume.data, sizeof(unsigned char) * dim.num_elem());
 
 	if(!rf.good()) 
 	{
 		std::cerr << "Error reading data from " << filename << std::endl;
 		return VolMat();
 	}
-
+	// for(int i = 0; i)
+	// std::cout << 
 	// Clean up
 	rf.close();
 	return volume;
@@ -139,14 +139,14 @@ VolMat void volread(const char* filename)
 
 bool volwrite(const char* filename, const VolMat& volume)
 {
-	std::ofstream wf(filename, ios::out | ios::binary);
+	std::ofstream wf(filename, std::ios::out | std::ios::binary);
 	if(!wf)
 	{
 		std::cout << "Cannot open " << filename << std::endl;
 		return false;
 	}
 
-	wf.write((char *) &volume.dim, sizeof(ArrayDim3))
+	wf.write((char *) &volume.dim, sizeof(ArrayDim3));
 	wf.write((char *) &volume.data, sizeof(unsigned char) * volume.dim.num_elem());
 	
 	if(!wf.good()) 

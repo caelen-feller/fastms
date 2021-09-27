@@ -23,7 +23,6 @@
 #ifndef DISABLE_CUDA
 #include "volume_solver_device.h"
 #endif // not DISABLE_CUDA
-#include "util/vol_mat.h"
 
 #include "util/volume.h"
 #include "util/types_equal.h"
@@ -120,10 +119,10 @@ public:
 		delete out_managed;
 	}
 
-	virtual VolMat run(const VolMat in_volume, const Par3 &par)
+	VolMat run(const VolMat in_volume, const Par3 &par)
 	{
 		MatVolume in_matvolume(in_volume);
-		MatVolume *out_matvolume = static_cast<MatVolume*>(solver.run(&in_matvolume, par));
+		MatVolume *out_matvolume = static_cast<MatVolume*>(volume_solver.run(&in_matvolume, par));
 		VolMat out_mat = out_matvolume->get_mat();
 		delete out_matvolume;
 		return out_mat;
